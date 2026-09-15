@@ -1,0 +1,44 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Production build
+dist/
+build/
+
+# Heavy GIS Data Layers (keep local, do not push multi-gigabyte layers to GitHub)
+CAPAS/
+public/capas/
+*.kmz
+*.kml
+*.geojson
+*.shp
+*.dbf
+*.shx
+*.prj
+*.cpg
+*.sbn
+*.sbx
+*.cpg
+*.zip
+*.rar
+*.7z
+*.tar.gz
+
+# Scratch and Temp files
+scratch/
+.gemini/
+*.tmp
+*.log
+
+# Environment and local settings
+.env
+.env.local
+.env.*.local
+
+# IDE & System files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+

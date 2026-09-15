@@ -1,0 +1,255 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.custom-leaflet-popup .leaflet-popup-content-wrapper {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
+.custom-leaflet-popup .leaflet-popup-tip {
+  background: #0f172a !important;
+}
+
+/* ========================================================= */
+/* ANIMACIONES CINEMÁTICAS: PORTADA DE INICIO & LOGO GEOIRS  */
+/* ========================================================= */
+@keyframes kenburns {
+  0% {
+    transform: scale(1.0) translate(0, 0);
+  }
+  50% {
+    transform: scale(1.06) translate(-1%, -0.8%);
+  }
+  100% {
+    transform: scale(1.02) translate(0.8%, 0.5%);
+  }
+}
+
+@keyframes radar-pulse {
+  0% {
+    transform: scale(0.85);
+    opacity: 0.9;
+  }
+  50% {
+    transform: scale(1.25);
+    opacity: 0.4;
+  }
+  100% {
+    transform: scale(1.65);
+    opacity: 0;
+  }
+}
+
+@keyframes float-subtle {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes glow-breathe {
+  0%, 100% {
+    filter: drop-shadow(0 0 15px rgba(42, 127, 91, 0.4)) drop-shadow(0 0 30px rgba(6, 182, 212, 0.2));
+  }
+  50% {
+    filter: drop-shadow(0 0 30px rgba(42, 127, 91, 0.8)) drop-shadow(0 0 50px rgba(6, 182, 212, 0.5));
+  }
+}
+
+@keyframes shockwave {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(3.5);
+    opacity: 0;
+  }
+}
+
+.animate-kenburns {
+  animation: kenburns 35s ease-in-out infinite alternate;
+}
+
+.animate-float-subtle {
+  animation: float-subtle 4s ease-in-out infinite;
+}
+
+.animate-glow-breathe {
+  animation: glow-breathe 3.5s ease-in-out infinite;
+}
+
+.animate-radar-1 {
+  animation: radar-pulse 3s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
+}
+
+.animate-radar-2 {
+  animation: radar-pulse 3s cubic-bezier(0.2, 0.8, 0.2, 1) infinite 1s;
+}
+
+.animate-radar-3 {
+  animation: radar-pulse 3s cubic-bezier(0.2, 0.8, 0.2, 1) infinite 2s;
+}
+
+/* ========================================================= */
+/* ESTILOS DE IMPRESIÓN Y EXPORTACIÓN A PDF (MINAM OFICIAL) */
+/* ========================================================= */
+@media print {
+  /* Configuración de página estándar A4 */
+  @page {
+    size: A4 portrait;
+    margin: 12mm 10mm 12mm 10mm;
+  }
+
+  /* Reset global para impresión limpia en fondo blanco */
+  html, body {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+  }
+
+  /* Ocultar elementos generales de la web al imprimir */
+  body * {
+    visibility: hidden;
+  }
+
+  /* Mostrar exclusivamente la Ficha Técnica y sus descendientes */
+  #ficha-tecnica-modal-root,
+  #ficha-tecnica-modal-root * {
+    visibility: visible;
+  }
+
+  #ficha-tecnica-modal-root {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: block !important;
+    z-index: 999999 !important;
+  }
+
+  #ficha-tecnica-modal-container {
+    position: static !important;
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    min-height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
+    box-shadow: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    transform: none !important;
+    animation: none !important;
+  }
+
+  #ficha-tecnica-header-banner {
+    background: #f8fafc !important;
+    border: 1.5px solid #cbd5e1 !important;
+    border-radius: 8px !important;
+    padding: 12px 16px !important;
+    margin-bottom: 16px !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  #ficha-tecnica-body {
+    display: block !important;
+    overflow: visible !important;
+    overflow-y: visible !important;
+    max-height: none !important;
+    height: auto !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Forzar visualización secuencial de TODAS las secciones de la Ficha Técnica */
+  .ficha-section {
+    display: block !important;
+    visibility: visible !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    margin-bottom: 18px !important;
+    padding: 14px 16px !important;
+    border-radius: 8px !important;
+    background: #ffffff !important;
+    border: 1.5px solid #cbd5e1 !important;
+    box-shadow: none !important;
+  }
+
+  /* Cajas y tarjetas internas de datos */
+  .ficha-card {
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+    color: #0f172a !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  .ficha-table {
+    border-collapse: collapse !important;
+    width: 100% !important;
+  }
+
+  .ficha-table th, .ficha-table td {
+    border: 1px solid #cbd5e1 !important;
+    padding: 4px 8px !important;
+    font-size: 8pt !important;
+    color: #0f172a !important;
+  }
+
+  .ficha-table th {
+    background: #f1f5f9 !important;
+    font-weight: bold !important;
+  }
+
+  /* Evitar saltos de página dentro de elementos */
+  .print-avoid-break {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  /* Forzar salto de página cuando se requiera */
+  .print-page-break {
+    page-break-before: always !important;
+    break-before: page !important;
+  }
+
+  /* Suprimir barras de desplazamiento completamente */
+  ::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+  }
+
+  /* Ocultar elementos interactivos o no imprimibles */
+  .print\:hidden {
+    display: none !important;
+    visibility: hidden !important;
+  }
+}

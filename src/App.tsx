@@ -33,10 +33,20 @@ export const App: React.FC = () => {
   const [searchRadiusKm, setSearchRadiusKm] = useState<number>(8);
 
   // WMS Layer Management & LocalStorage Persistence
+  // WMS Layer Management & LocalStorage Persistence (v5 con soporte GeoJSON nativo)
   const [wmsLayers, setWmsLayers] = useState<WMSLayerConfig[]>(() => {
-    const saved = localStorage.getItem('geoportal_irs_wms_layers_v4');
+    const saved = localStorage.getItem('geoportal_irs_wms_layers_v5');
     if (saved) {
-      try { return JSON.parse(saved); } catch (e) { console.error(e); }
+      try {
+        const parsed: WMSLayerConfig[] = JSON.parse(saved);
+        // Garantizar que las capas oficiales conserven las URLs actualizadas a .geojson
+        return OFFICIAL_WMS_LAYERS.map(official => {
+          const userState = parsed.find(p => p.id === official.id);
+          return userState ? { ...official, visible: userState.visible, opacidad: userState.opacidad } : official;
+        });
+      } catch (e) {
+        console.error('Error parseando capas guardadas:', e);
+      }
     }
     return OFFICIAL_WMS_LAYERS;
   });
@@ -44,7 +54,7 @@ export const App: React.FC = () => {
   const [layerStatuses, setLayerStatuses] = useState<Record<string, 'OK' | 'ERROR' | 'LOADING'>>({});
 
   useEffect(() => {
-    localStorage.setItem('geoportal_irs_wms_layers_v4', JSON.stringify(wmsLayers));
+    localStorage.setItem('geoportal_irs_wms_layers_v5', JSON.stringify(wmsLayers));
   }, [wmsLayers]);
 
   // Modals & Tools State

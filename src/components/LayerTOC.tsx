@@ -193,7 +193,7 @@ export const LayerTOC: React.FC<LayerTOCProps> = ({
   }
 
   return (
-    <div className="relative w-84 bg-slate-900 border-r border-slate-800 flex flex-col h-full z-10 shadow-2xl select-none transition-all duration-300">
+    <div className="absolute sm:relative inset-y-0 left-0 w-[88vw] sm:w-84 max-w-sm bg-slate-900 border-r border-slate-800 flex flex-col h-full z-30 shadow-2xl select-none transition-all duration-300">
       {/* Pestaña flotante en el borde derecho para colapsar con un solo clic */}
       <button
         onClick={() => setIsCollapsed(true)}

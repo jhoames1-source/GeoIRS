@@ -337,10 +337,16 @@ export const IRSLocatorModal: React.FC<IRSLocatorModalProps> = ({
   }
 
   // Estado Expandido
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 640;
+
   return (
     <div
-      style={{ position: 'fixed', left: `${panelPos.x}px`, top: `${panelPos.y}px` }}
-      className={`fixed z-40 transition-shadow duration-200 w-[430px] max-h-[88vh] bg-slate-950/95 backdrop-blur-xl border ${
+      style={
+        isMobile
+          ? { position: 'fixed', left: '0.5rem', right: '0.5rem', top: '3.75rem', maxWidth: 'calc(100vw - 1rem)' }
+          : { position: 'fixed', left: `${panelPos.x}px`, top: `${panelPos.y}px` }
+      }
+      className={`fixed z-40 transition-shadow duration-200 w-[95vw] sm:w-[430px] max-h-[88vh] bg-slate-950/95 backdrop-blur-xl border ${
         isDragging ? 'border-emerald-400 ring-2 ring-emerald-500/30' : 'border-slate-800'
       } rounded-2xl shadow-2xl flex flex-col overflow-hidden text-slate-100 select-none animate-in fade-in zoom-in-95 duration-150`}
     >

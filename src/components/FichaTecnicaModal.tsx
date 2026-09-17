@@ -100,49 +100,50 @@ export const FichaTecnicaModal: React.FC<FichaTecnicaModalProps> = ({
       >
         
         {/* Encabezado Institucional de la Modal (Oculto en impresión) */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-slate-900/90 print:hidden">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-slate-800 bg-slate-900/90 gap-3 print:hidden">
           <div className="flex items-center space-x-3">
-            <div className="p-2.5 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 shadow-lg shadow-emerald-950/40">
-              <FileText className="w-6 h-6" />
+            <div className="p-2 sm:p-2.5 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 shadow-lg shadow-emerald-950/40 shrink-0">
+              <FileText className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
             <div>
-              <div className="flex items-center space-x-2">
-                <h2 className="text-base font-black text-white tracking-wide">
-                  Ficha Técnica de Evaluación Territorial y Ambiental de Sitio
+              <div className="flex flex-wrap items-center gap-1.5 sm:space-x-2">
+                <h2 className="text-sm sm:text-base font-black text-white tracking-wide">
+                  Ficha Técnica Territorial
                 </h2>
-                <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-300 border border-emerald-700">
-                  D.L. N° 1278
+                <span className="text-[9px] sm:text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-300 border border-emerald-700">
+                  D.L. 1278
                 </span>
-                <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-indigo-950 text-indigo-300 border border-indigo-700">
+                <span className="text-[9px] sm:text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-indigo-950 text-indigo-300 border border-indigo-700">
                   ZEE & CUM
                 </span>
               </div>
-              <p className="text-xs text-slate-400 mt-0.5">
-                Capacidad de Uso de Suelo (MIDAGRI), Zonificación ZEE, Vientos y Peritaje Asistido por Inteligencia Artificial (GeoAI)
+              <p className="text-[10px] sm:text-xs text-slate-400 mt-0.5 line-clamp-1">
+                Capacidad de Uso de Suelo (MIDAGRI), ZEE y Peritaje Asistido (GeoAI)
               </p>
             </div>
           </div>
           
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2 self-end sm:self-auto shrink-0">
             <button
               onClick={handleDownloadPDF}
-              className="px-3 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold text-xs flex items-center space-x-1.5 transition shadow-lg shadow-indigo-950/50 active:scale-95"
+              className="px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold text-xs flex items-center space-x-1 transition shadow-lg shadow-indigo-950/50 active:scale-95"
               title="Descargar PDF institucional oficial generado vectorialmente"
             >
-              <Download className="w-4 h-4" />
-              <span>Exportar PDF Oficial</span>
+              <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <span className="hidden sm:inline">Exportar</span>
+              <span>PDF</span>
             </button>
             <button
               onClick={handlePrintFullFicha}
-              className="px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs flex items-center space-x-1.5 transition shadow-lg shadow-emerald-950/50 active:scale-95"
+              className="px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs flex items-center space-x-1 transition shadow-lg shadow-emerald-950/50 active:scale-95"
               title="Imprimir o guardar ficha técnica completa como documento continuo sin barras"
             >
-              <Printer className="w-4 h-4" />
-              <span>Imprimir Ficha Completa</span>
+              <Printer className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <span>Imprimir</span>
             </button>
             <button
               onClick={onClose}
-              className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition text-xs font-bold"
+              className="px-3 py-1.5 sm:py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition text-xs font-bold"
             >
               Cerrar
             </button>

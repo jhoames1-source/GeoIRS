@@ -30,21 +30,25 @@ interface MapViewProps {
 const GITHUB_RAW_CDN = 'https://raw.githubusercontent.com/jhoames1-source/GeoIRS/main/public/capas';
 const JSDELIVR_CDN = 'https://cdn.jsdelivr.net/gh/jhoames1-source/GeoIRS@main/public/capas';
 
-// Función auxiliar de lectura resiliente y directa de capas GIS (Local -> CDN GitHub -> jsDelivr -> Fallback)
+// Función auxiliar de lectura resiliente y directa de capas GIS (GeoJSON -> KMZ -> CDN)
 async function fetchLocalLayerData(layerId: string, urlWms: string): Promise<any> {
   const cleanPath = (urlWms || `/capas/${layerId}.kmz`).replace(/^\/(CAPAS|capas)\//i, '');
-  const encodedPath = encodeURI(cleanPath);
+  const geojsonName = cleanPath.replace(/\.kmz$/i, '.geojson');
+  const kmzName = cleanPath.endsWith('.kmz') ? cleanPath : `${cleanPath}.kmz`;
 
-  // Lista priorizada de URLs candidatas (Locales y CDN en la nube)
+  // 1. Prioridad Absoluta: GeoJSON pre-compilado (ultra rápido, 0 fallos de XML/ZIP)
   const candidateUrls = [
-    `/capas/${encodedPath}`,
-    `/CAPAS/${encodedPath}`,
-    `${GITHUB_RAW_CDN}/${encodedPath}`,
-    `${JSDELIVR_CDN}/${encodedPath}`,
-    `/capas/${layerId}.kmz`,
-    `${GITHUB_RAW_CDN}/${layerId}.kmz`,
+    `/capas/${encodeURI(geojsonName)}`,
     `/capas/${layerId}.geojson`,
+    `${GITHUB_RAW_CDN}/${encodeURI(geojsonName)}`,
     `${GITHUB_RAW_CDN}/${layerId}.geojson`,
+    `${JSDELIVR_CDN}/${encodeURI(geojsonName)}`,
+    `${JSDELIVR_CDN}/${layerId}.geojson`,
+    // 2. Fallback a archivo KMZ local o CDN
+    `/capas/${encodeURI(kmzName)}`,
+    `${GITHUB_RAW_CDN}/${encodeURI(kmzName)}`,
+    `${JSDELIVR_CDN}/${encodeURI(kmzName)}`,
+    `/capas/${layerId}.kmz`,
   ];
 
   let lastError: any = null;
@@ -55,7 +59,7 @@ async function fetchLocalLayerData(layerId: string, urlWms: string): Promise<any
       if (!res.ok) continue;
 
       const contentType = res.headers.get('content-type') || '';
-      // Si el servidor devolvió HTML (por rewrite SPA de Vercel en ruta 404), ignorar y probar siguiente fuente
+      // Si el servidor devolvió HTML (por rewrite SPA de Vercel en ruta 404), ignorar
       if (contentType.includes('text/html')) {
         continue;
       }
@@ -64,17 +68,15 @@ async function fetchLocalLayerData(layerId: string, urlWms: string): Promise<any
         const text = await res.text();
         if (text.trim().startsWith('{') || text.trim().startsWith('[')) {
           const data = JSON.parse(text);
-          if (data && (data.type === 'FeatureCollection' || Array.isArray(data.features))) {
+          if (data && data.features && Array.isArray(data.features) && data.features.length > 0) {
             return data;
           }
         }
       } else {
         // Procesar archivo KMZ (ZIP con KML interno)
         const arrayBuffer = await res.arrayBuffer();
-        // Verificar firma ZIP (PK..)
         const uint8 = new Uint8Array(arrayBuffer.slice(0, 4));
         if (uint8[0] !== 0x50 || uint8[1] !== 0x4B) {
-          // No es un ZIP válido (posible respuesta de texto plano o fallback)
           continue;
         }
 
@@ -82,11 +84,14 @@ async function fetchLocalLayerData(layerId: string, urlWms: string): Promise<any
         const kmlFileName = Object.keys(zip.files).find(name => name.toLowerCase().endsWith('.kml'));
 
         if (kmlFileName) {
-          const kmlText = await zip.files[kmlFileName].async('text');
+          let kmlText = await zip.files[kmlFileName].async('text');
           const xmlDoc = new DOMParser().parseFromString(kmlText, 'text/xml');
-          const parsed = kml(xmlDoc);
-          if (parsed && (parsed.type === 'FeatureCollection' || Array.isArray((parsed as any).features))) {
-            return parsed;
+          // Validar que no haya error de parseo XML en el documento
+          if (!xmlDoc.getElementsByTagName('parsererror').length) {
+            const parsed = kml(xmlDoc);
+            if (parsed && parsed.features && Array.isArray(parsed.features) && parsed.features.length > 0) {
+              return parsed;
+            }
           }
         }
       }
@@ -95,12 +100,7 @@ async function fetchLocalLayerData(layerId: string, urlWms: string): Promise<any
     }
   }
 
-  console.warn(`[GeoIRS Cloud GIS] Capa ${layerId} no encontrada en fuentes locales ni CDN. Generando capa vacía de contingencia.`);
-  // Devolver FeatureCollection vacío para no bloquear el visor
-  return {
-    type: 'FeatureCollection',
-    features: []
-  };
+  throw new Error(`No se pudieron cargar features válidas para la capa ${layerId}`);
 }
 
 export const MapView: React.FC<MapViewProps> = ({

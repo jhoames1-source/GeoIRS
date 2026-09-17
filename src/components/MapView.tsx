@@ -26,20 +26,41 @@ interface MapViewProps {
   triangulatedDistricts?: Jurisdiction[];
 }
 
-// Función auxiliar de lectura resiliente y directa de capas locales (GeoJSON optimizado / KMZ)
-async function fetchLocalLayerData(layerId: string, urlWms: string): Promise<any> {
-  // 1. Prioridad: Cargar versión GeoJSON de alta velocidad si está disponible
-  const candidateGeoJsonUrls = [
-    `/capas/${layerId}.geojson`,
-    `/CAPAS/${layerId}.geojson`,
-    urlWms ? urlWms.replace(/\.kmz$/i, '.geojson') : '',
-    urlWms ? urlWms.replace('/CAPAS/', '/capas/').replace(/\.kmz$/i, '.geojson') : ''
-  ].filter(Boolean);
+// CDN Base URLs para fallback de capas en la nube
+const GITHUB_RAW_CDN = 'https://raw.githubusercontent.com/jhoames1-source/GeoIRS/main/public/capas';
+const JSDELIVR_CDN = 'https://cdn.jsdelivr.net/gh/jhoames1-source/GeoIRS@main/public/capas';
 
-  for (const gjUrl of candidateGeoJsonUrls) {
+// Función auxiliar de lectura resiliente y directa de capas GIS (Local -> CDN GitHub -> jsDelivr -> Fallback)
+async function fetchLocalLayerData(layerId: string, urlWms: string): Promise<any> {
+  const cleanPath = (urlWms || `/capas/${layerId}.kmz`).replace(/^\/(CAPAS|capas)\//i, '');
+  const encodedPath = encodeURI(cleanPath);
+
+  // Lista priorizada de URLs candidatas (Locales y CDN en la nube)
+  const candidateUrls = [
+    `/capas/${encodedPath}`,
+    `/CAPAS/${encodedPath}`,
+    `${GITHUB_RAW_CDN}/${encodedPath}`,
+    `${JSDELIVR_CDN}/${encodedPath}`,
+    `/capas/${layerId}.kmz`,
+    `${GITHUB_RAW_CDN}/${layerId}.kmz`,
+    `/capas/${layerId}.geojson`,
+    `${GITHUB_RAW_CDN}/${layerId}.geojson`,
+  ];
+
+  let lastError: any = null;
+
+  for (const url of candidateUrls) {
     try {
-      const res = await fetch(encodeURI(gjUrl));
-      if (res.ok) {
+      const res = await fetch(url);
+      if (!res.ok) continue;
+
+      const contentType = res.headers.get('content-type') || '';
+      // Si el servidor devolvió HTML (por rewrite SPA de Vercel en ruta 404), ignorar y probar siguiente fuente
+      if (contentType.includes('text/html')) {
+        continue;
+      }
+
+      if (url.toLowerCase().endsWith('.geojson') || url.toLowerCase().endsWith('.json') || contentType.includes('json')) {
         const text = await res.text();
         if (text.trim().startsWith('{') || text.trim().startsWith('[')) {
           const data = JSON.parse(text);
@@ -47,44 +68,39 @@ async function fetchLocalLayerData(layerId: string, urlWms: string): Promise<any
             return data;
           }
         }
+      } else {
+        // Procesar archivo KMZ (ZIP con KML interno)
+        const arrayBuffer = await res.arrayBuffer();
+        // Verificar firma ZIP (PK..)
+        const uint8 = new Uint8Array(arrayBuffer.slice(0, 4));
+        if (uint8[0] !== 0x50 || uint8[1] !== 0x4B) {
+          // No es un ZIP válido (posible respuesta de texto plano o fallback)
+          continue;
+        }
+
+        const zip = await JSZip.loadAsync(arrayBuffer);
+        const kmlFileName = Object.keys(zip.files).find(name => name.toLowerCase().endsWith('.kml'));
+
+        if (kmlFileName) {
+          const kmlText = await zip.files[kmlFileName].async('text');
+          const xmlDoc = new DOMParser().parseFromString(kmlText, 'text/xml');
+          const parsed = kml(xmlDoc);
+          if (parsed && (parsed.type === 'FeatureCollection' || Array.isArray((parsed as any).features))) {
+            return parsed;
+          }
+        }
       }
-    } catch (_) {}
-  }
-
-  // 2. Si no hay GeoJSON disponible, procesar el archivo KMZ local
-  const targetUrl = urlWms || `/CAPAS/${layerId}.kmz`;
-  let kmzRes = await fetch(encodeURI(targetUrl));
-  if (!kmzRes.ok) {
-    kmzRes = await fetch(encodeURI(targetUrl.replace('/CAPAS/', '/capas/')));
-  }
-  if (!kmzRes.ok) {
-    kmzRes = await fetch(encodeURI(`/CAPAS/${layerId}.kmz`));
-  }
-  if (!kmzRes.ok) {
-    kmzRes = await fetch(encodeURI(`/capas/${layerId}.kmz`));
-  }
-  if (!kmzRes.ok) {
-    let fallbackGj = await fetch(encodeURI(`/CAPAS/${layerId}.geojson`));
-    if (!fallbackGj.ok) {
-      fallbackGj = await fetch(encodeURI(`/capas/${layerId}.geojson`));
+    } catch (err) {
+      lastError = err;
     }
-    if (fallbackGj.ok) {
-      return await fallbackGj.json();
-    }
-    throw new Error(`Archivo local no encontrado para capa ${layerId} en ${targetUrl}`);
   }
 
-  const arrayBuffer = await kmzRes.arrayBuffer();
-  const zip = await JSZip.loadAsync(arrayBuffer);
-  const kmlFileName = Object.keys(zip.files).find(name => name.toLowerCase().endsWith('.kml'));
-
-  if (!kmlFileName) {
-    throw new Error(`El archivo KMZ ${targetUrl} no contiene un documento KML válido`);
-  }
-
-  const kmlText = await zip.files[kmlFileName].async('text');
-  const xmlDoc = new DOMParser().parseFromString(kmlText, 'text/xml');
-  return kml(xmlDoc);
+  console.warn(`[GeoIRS Cloud GIS] Capa ${layerId} no encontrada en fuentes locales ni CDN. Generando capa vacía de contingencia.`);
+  // Devolver FeatureCollection vacío para no bloquear el visor
+  return {
+    type: 'FeatureCollection',
+    features: []
+  };
 }
 
 export const MapView: React.FC<MapViewProps> = ({

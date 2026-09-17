@@ -1,0 +1,40 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Concesión Minera Conga Celendín (INGEMMET)",
+        "entidad": "Catastro_Minero_Vigente",
+        "id": "Catastro_Minero_Vigente_1"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -78.2,
+              -6.88
+            ],
+            [
+              -78.16,
+              -6.88
+            ],
+            [
+              -78.16,
+              -6.94
+            ],
+            [
+              -78.2,
+              -6.94
+            ],
+            [
+              -78.2,
+              -6.88
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

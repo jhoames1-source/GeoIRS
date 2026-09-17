@@ -1,0 +1,78 @@
+{
+  "AMAZONAS": {
+    "status": "success",
+    "file": "CAPAS\\ZEE\\AMAZONAS\\AMAZONAS_ZEE.kmz"
+  },
+  "AREQUIPA": {
+    "status": "success",
+    "file": "CAPAS\\ZEE\\AREQUIPA\\AREQUIPA_ZEE.kmz"
+  },
+  "AYACUCHO": {
+    "status": "success",
+    "file": "CAPAS\\ZEE\\AYACUCHO\\AYACUCHO_ZEE.kmz"
+  },
+  "CAJAMARCA": {
+    "status": "success",
+    "file": "CAPAS\\ZEE\\CAJAMARCA\\CAJAMARCA_ZEE.kmz"
+  },
+  "CALLAO": {
+    "status": "success",
+    "file": "CAPAS\\ZEE\\CALLAO\\CALLAO_ZEE.kmz"
+  },
+  "CUSCO": {
+    "status": "success",
+    "file": "CAPAS\\ZEE\\CUSCO\\CUSCO_ZEE.kmz"
+  },
+  "HUANCAVELICA": {
+    "status": "success",
+    "file": "CAPAS\\ZEE\\HUANCAVELICA\\HUANCAVELICA_ZEE.kmz"
+  },
+  "HUANUCO": {
+    "status": "success",
+    "file": "CAPAS\\ZEE\\HUANUCO\\HUANUCO_ZEE.kmz"
+  },
+  "JUNIN": {
+    "status": "success",
+    "file": "CAPAS\\ZEE\\JUNIN\\JUNIN_ZEE.kmz"
+  },
+  "LAMBAYEQUE": {
+    "status": "success",
+    "file": "CAPAS\\ZEE\\LAMBAYEQUE\\LAMBAYEQUE_ZEE.kmz"
+  },
+  "MADRE_DE_DIOS": {
+    "status": "success",
+    "file": "CAPAS\\ZEE\\MADRE_DE_DIOS\\MADRE_DE_DIOS_ZEE.kmz"
+  },
+  "MOQUEGUA": {
+    "status": "success",
+    "file": "CAPAS\\ZEE\\MOQUEGUA\\MOQUEGUA_ZEE.kmz"
+  },
+  "PIURA": {
+    "status": "success",
+    "file": "CAPAS\\ZEE\\PIURA\\PIURA_ZEE.kmz"
+  },
+  "PUNO": {
+    "status": "success",
+    "file": "CAPAS\\ZEE\\PUNO\\PUNO_ZEE.kmz"
+  },
+  "SAN_MARTIN": {
+    "status": "success",
+    "file": "CAPAS\\ZEE\\SAN_MARTIN\\SAN_MARTIN_ZEE.kmz"
+  },
+  "TACNA": {
+    "status": "success",
+    "file": "CAPAS\\ZEE\\TACNA\\TACNA_ZEE.kmz"
+  },
+  "TUMBES": {
+    "status": "success",
+    "file": "CAPAS\\ZEE\\TUMBES\\TUMBES_ZEE.kmz"
+  },
+  "UCAYALI": {
+    "status": "success",
+    "file": "CAPAS\\ZEE\\UCAYALI\\UCAYALI_ZEE.kmz"
+  },
+  "LORETO_ALTO_AMAZONAS": {
+    "status": "success",
+    "file": "CAPAS\\ZEE\\LORETO_ALTO_AMAZONAS\\LORETO_ALTO_AMAZONAS_ZEE.kmz"
+  }
+}

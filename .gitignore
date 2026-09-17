@@ -6,12 +6,17 @@ node_modules/
 dist/
 build/
 
-# Heavy GIS Data Layers (keep local, do not push multi-gigabyte layers to GitHub)
+# Heavy Raw GIS Files (kept local on hard drive)
 CAPAS/
-public/capas/
-*.kmz
-*.kml
-*.geojson
+scratch/
+DESCARGAS_MAPAS/
+__pycache__/
+
+# Track optimized web layers in public/capas
+!public/capas/
+!public/capas/**
+
+# Raw Shapefile and archive extensions outside public/capas
 *.shp
 *.dbf
 *.shx
@@ -19,7 +24,6 @@ public/capas/
 *.cpg
 *.sbn
 *.sbx
-*.cpg
 *.zip
 *.rar
 *.7z

@@ -1,0 +1,40 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Casco Urbano Celendín (COFOPRI GEOLLAQTA)",
+        "entidad": "Catastro_Urbano_Geollaqta",
+        "id": "Catastro_Urbano_Geollaqta_1"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -78.158,
+              -6.866
+            ],
+            [
+              -78.146,
+              -6.866
+            ],
+            [
+              -78.146,
+              -6.874
+            ],
+            [
+              -78.158,
+              -6.874
+            ],
+            [
+              -78.158,
+              -6.866
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

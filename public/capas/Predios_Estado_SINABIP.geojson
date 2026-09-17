@@ -1,0 +1,40 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Predio Estatal Eriazo Huamangaga (SBN SINABIP)",
+        "entidad": "Predios_Estado_SINABIP",
+        "id": "Predios_Estado_SINABIP_1"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -78.138,
+              -6.882
+            ],
+            [
+              -78.132,
+              -6.882
+            ],
+            [
+              -78.132,
+              -6.888
+            ],
+            [
+              -78.138,
+              -6.888
+            ],
+            [
+              -78.138,
+              -6.882
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

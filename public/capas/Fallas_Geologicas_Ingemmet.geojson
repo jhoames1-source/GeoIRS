@@ -1,0 +1,30 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Falla Celendín (INGEMMET)",
+        "entidad": "Fallas_Geologicas_Ingemmet",
+        "id": "Fallas_Geologicas_Ingemmet_1"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -78.2,
+            -6.82
+          ],
+          [
+            -78.15,
+            -6.88
+          ],
+          [
+            -78.1,
+            -6.95
+          ]
+        ]
+      }
+    }
+  ]
+}

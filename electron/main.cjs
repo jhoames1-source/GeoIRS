@@ -5,21 +5,33 @@ const fs = require('fs');
 let mainWindow;
 
 function createWindow() {
+  const iconPath = path.join(__dirname, '../public/icon.ico');
+  const fallbackIcon = path.join(__dirname, '../public/portada/Logo_Icon.png');
+
   mainWindow = new BrowserWindow({
     width: 1440,
     height: 900,
     minWidth: 1024,
     minHeight: 700,
     title: 'GeoIRS - Plataforma Espacial IRS (Perú)',
-    icon: path.join(__dirname, '../public/portada/Logo_Icon.png'),
+    icon: fs.existsSync(iconPath) ? iconPath : fallbackIcon,
     webPreferences: {
       preload: path.join(__dirname, 'preload.cjs'),
       nodeIntegration: true,
       contextIsolation: false,
-      webSecurity: false // Permite leer capas locales y archivos KMZ/GeoJSON sin bloqueos CORS
+      webSecurity: false,
+      allowRunningInsecureContent: true
     },
     autoHideMenuBar: true,
     backgroundColor: '#020617'
+  });
+
+  // Permitir inspeccionar con F12 o Ctrl+Shift+I
+  mainWindow.webContents.on('before-input-event', (event, input) => {
+    if (input.key === 'F12' || (input.control && input.shift && input.key.toLowerCase() === 'i')) {
+      mainWindow.webContents.toggleDevTools();
+      event.preventDefault();
+    }
   });
 
   const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
@@ -27,7 +39,10 @@ function createWindow() {
   if (isDev && process.env.VITE_DEV_SERVER_URL) {
     mainWindow.loadURL(process.env.VITE_DEV_SERVER_URL);
   } else {
-    mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
+    const indexPath = path.join(__dirname, '../dist/index.html');
+    mainWindow.loadFile(indexPath).catch(err => {
+      console.error('Error al cargar index.html:', err);
+    });
   }
 
   mainWindow.on('closed', () => {

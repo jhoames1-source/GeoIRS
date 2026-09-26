@@ -100,7 +100,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         >
           <div className="relative p-1 rounded-2xl bg-gradient-to-br from-emerald-500/20 via-slate-900 to-slate-950 border border-emerald-500/40 shadow-lg shadow-emerald-950/80 group-hover:border-emerald-400 group-hover:shadow-emerald-500/40 transition-all">
             <img 
-              src="/portada/Logo_Icon.png" 
+              src="./portada/Logo_Icon.png" 
               alt="Logo GeoIRS" 
               className="w-7 h-7 sm:w-8 sm:h-8 object-contain drop-shadow-md group-hover:scale-110 transition-transform" 
             />

@@ -71,7 +71,7 @@ export const PortadaInicio: React.FC<PortadaInicioProps> = ({ onEnterPortal }) =
       {/* Fondo Panorámico con Animación Ken Burns */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <img 
-          src="/portada/Inicio_Portada.jpg" 
+          src="./portada/Inicio_Portada.jpg" 
           alt="Portada GeoIRS" 
           className="w-full h-full object-cover object-center animate-kenburns opacity-90 scale-105"
         />
@@ -137,6 +137,13 @@ export const PortadaInicio: React.FC<PortadaInicioProps> = ({ onEnterPortal }) =
 
           {/* Halo sutil de luz bio-digital que se intensifica al pasar el cursor */}
           <div className="absolute w-64 h-64 sm:w-80 sm:h-80 rounded-full bg-radial-gradient from-emerald-400/25 via-cyan-400/15 to-transparent blur-2xl opacity-40 group-hover:opacity-90 transition-opacity duration-500 pointer-events-none" />
+
+          {/* Logo Central GeoIRS con efecto de flotación, brillo y respuesta interactiva */}
+          <img 
+            src="./portada/Logo_GeoIRS_transparent.png" 
+            alt="GeoIRS - Plataforma Espacial de Selección de Sitios IRS" 
+            className="relative z-10 w-52 sm:w-72 md:w-88 object-contain drop-shadow-[0_0_35px_rgba(16,185,129,0.5)] group-hover:drop-shadow-[0_0_55px_rgba(16,185,129,0.9)] group-hover:scale-105 transition-all duration-300"
+          />
         </div>
 
       </main>

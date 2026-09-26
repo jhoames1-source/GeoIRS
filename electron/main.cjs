@@ -60,14 +60,62 @@ ipcMain.handle('get-capas-path', () => {
 
 ipcMain.handle('read-local-gis-file', async (event, relativePath) => {
   try {
-    const basePath = app.isPackaged 
-      ? path.join(process.resourcesPath, 'capas') 
-      : path.join(__dirname, '../CAPAS');
-    const fullPath = path.join(basePath, relativePath);
-    if (fs.existsSync(fullPath)) {
-      return { success: true, data: fs.readFileSync(fullPath).toString('base64') };
+    const cleanRel = decodeURIComponent(relativePath).replace(/^\/(CAPAS|capas)\//i, '');
+    const cleanRelNoExt = cleanRel.replace(/\.(geojson|kmz|kml|json)$/i, '');
+
+    const searchDirs = [
+      app.isPackaged ? path.join(process.resourcesPath, 'capas') : path.join(__dirname, '../CAPAS'),
+      path.join(__dirname, '../public/capas'),
+      path.join(__dirname, '../dist/capas'),
+      path.join(__dirname, '../CAPAS')
+    ];
+
+    let targetPath = null;
+
+    for (const dir of searchDirs) {
+      if (!dir || !fs.existsSync(dir)) continue;
+
+      // 1. Verificación directa
+      const direct = path.join(dir, cleanRel);
+      if (fs.existsSync(direct) && fs.statSync(direct).isFile()) {
+        targetPath = direct;
+        break;
+      }
+
+      // 2. Búsqueda inteligente case-insensitive y tolerante a guiones/espacios
+      try {
+        const files = fs.readdirSync(dir);
+        const match = files.find(f => {
+          const fLower = f.toLowerCase();
+          const targetLower = cleanRel.toLowerCase();
+          if (fLower === targetLower) return true;
+          const fNoExt = fLower.replace(/\.[^.]+$/, '');
+          const targetNoExt = cleanRelNoExt.toLowerCase();
+          return fNoExt === targetNoExt || fNoExt.replace(/[-_ ]/g, '') === targetNoExt.replace(/[-_ ]/g, '');
+        });
+        if (match) {
+          const matchedPath = path.join(dir, match);
+          if (fs.statSync(matchedPath).isFile()) {
+            targetPath = matchedPath;
+            break;
+          }
+        }
+      } catch (errDir) {
+        // Ignorar error al leer directorio
+      }
     }
-    return { success: false, error: 'File not found' };
+
+    if (!targetPath) {
+      return { success: false, error: 'File not found on disk: ' + cleanRel };
+    }
+
+    if (targetPath.toLowerCase().endsWith('.geojson') || targetPath.toLowerCase().endsWith('.json')) {
+      const text = fs.readFileSync(targetPath, 'utf8');
+      return { success: true, format: 'json', text };
+    } else {
+      const buffer = fs.readFileSync(targetPath);
+      return { success: true, format: 'binary', buffer };
+    }
   } catch (err) {
     return { success: false, error: err.message };
   }

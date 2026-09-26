@@ -39,28 +39,55 @@ async function fetchLocalLayerData(layerId: string, urlWms: string): Promise<any
   // 0. Si corre en Electron Desktop (offline/local), leer directamente de disco sin restricciones
   if (typeof window !== 'undefined' && (window as any).electronAPI?.readLocalGISFile) {
     try {
-      const electronCandidates = [geojsonName, `${layerId}.geojson`, kmzName, `${layerId}.kmz`];
+      const electronCandidates = [
+        geojsonName,
+        cleanPath,
+        `${layerId}.geojson`,
+        kmzName,
+        `${layerId}.kmz`
+      ];
       for (const rel of electronCandidates) {
         const fileRes = await (window as any).electronAPI.readLocalGISFile(rel);
-        if (fileRes && fileRes.success && fileRes.data) {
-          if (rel.toLowerCase().endsWith('.geojson') || rel.toLowerCase().endsWith('.json')) {
-            const raw = decodeURIComponent(escape(atob(fileRes.data)));
-            const parsed = JSON.parse(raw);
-            if (parsed && parsed.features) return parsed;
-          } else if (rel.toLowerCase().endsWith('.kmz')) {
-            const binaryString = atob(fileRes.data);
-            const bytes = new Uint8Array(binaryString.length);
-            for (let i = 0; i < binaryString.length; i++) {
-              bytes[i] = binaryString.charCodeAt(i);
+        if (fileRes && fileRes.success) {
+          if (fileRes.format === 'json' && fileRes.text) {
+            const parsed = JSON.parse(fileRes.text);
+            if (parsed && parsed.features && Array.isArray(parsed.features) && parsed.features.length > 0) {
+              return parsed;
             }
-            const zip = await JSZip.loadAsync(bytes);
+          } else if (fileRes.format === 'binary' && fileRes.buffer) {
+            const zip = await JSZip.loadAsync(fileRes.buffer);
             const kmlFileName = Object.keys(zip.files).find(name => name.toLowerCase().endsWith('.kml'));
             if (kmlFileName) {
               const kmlText = await zip.files[kmlFileName].async('text');
               const xmlDoc = new DOMParser().parseFromString(kmlText, 'text/xml');
               if (!xmlDoc.getElementsByTagName('parsererror').length) {
                 const parsed = kml(xmlDoc);
-                if (parsed && parsed.features && parsed.features.length > 0) return parsed;
+                if (parsed && parsed.features && Array.isArray(parsed.features) && parsed.features.length > 0) {
+                  return parsed;
+                }
+              }
+            }
+          } else if (fileRes.data) {
+            // Compatibilidad legacy base64
+            const binaryString = atob(fileRes.data);
+            const bytes = new Uint8Array(binaryString.length);
+            for (let i = 0; i < binaryString.length; i++) {
+              bytes[i] = binaryString.charCodeAt(i);
+            }
+            if (rel.toLowerCase().endsWith('.geojson') || rel.toLowerCase().endsWith('.json')) {
+              const textDecoder = new TextDecoder('utf-8');
+              const parsed = JSON.parse(textDecoder.decode(bytes));
+              if (parsed && parsed.features) return parsed;
+            } else {
+              const zip = await JSZip.loadAsync(bytes);
+              const kmlFileName = Object.keys(zip.files).find(name => name.toLowerCase().endsWith('.kml'));
+              if (kmlFileName) {
+                const kmlText = await zip.files[kmlFileName].async('text');
+                const xmlDoc = new DOMParser().parseFromString(kmlText, 'text/xml');
+                if (!xmlDoc.getElementsByTagName('parsererror').length) {
+                  const parsed = kml(xmlDoc);
+                  if (parsed && parsed.features && parsed.features.length > 0) return parsed;
+                }
               }
             }
           }
@@ -71,19 +98,25 @@ async function fetchLocalLayerData(layerId: string, urlWms: string): Promise<any
     }
   }
 
-  // 1. Prioridad Absoluta: GeoJSON pre-compilado (ultra rápido, 0 fallos de XML/ZIP)
+  // 1. Prioridad: GeoJSON relativo o absoluto
   const candidateUrls = [
+    `./capas/${encodeURI(geojsonName)}`,
+    `./capas/${encodeURI(cleanPath)}`,
+    `./capas/${layerId}.geojson`,
     `/capas/${encodeURI(geojsonName)}`,
     `/capas/${layerId}.geojson`,
+    // 2. Fallback a KMZ relativo o absoluto
+    `./capas/${encodeURI(kmzName)}`,
+    `./capas/${layerId}.kmz`,
+    `/capas/${encodeURI(kmzName)}`,
+    `/capas/${layerId}.kmz`,
+    // 3. Fallback CDN
     `${GITHUB_RAW_CDN}/${encodeURI(geojsonName)}`,
     `${GITHUB_RAW_CDN}/${layerId}.geojson`,
+    `${GITHUB_RAW_CDN}/${encodeURI(kmzName)}`,
     `${JSDELIVR_CDN}/${encodeURI(geojsonName)}`,
     `${JSDELIVR_CDN}/${layerId}.geojson`,
-    // 2. Fallback a archivo KMZ local o CDN
-    `/capas/${encodeURI(kmzName)}`,
-    `${GITHUB_RAW_CDN}/${encodeURI(kmzName)}`,
     `${JSDELIVR_CDN}/${encodeURI(kmzName)}`,
-    `/capas/${layerId}.kmz`,
   ];
 
   let lastError: any = null;

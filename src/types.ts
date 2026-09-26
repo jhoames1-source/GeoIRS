@@ -76,7 +76,7 @@ export type CategoryWMS = 'EXCLUSION_LEGAL' | 'RESTRICCION_TECNICA' | 'INFRAESTR
 export interface WMSLayerConfig {
   id: string;
   nombre: string;
-  entidad: 'MINAM' | 'INGEMMET' | 'ANA' | 'SERNANP' | 'MTC' | 'OEFA' | 'SBN' | 'MINCUL' | 'GEOPERU' | 'COFOPRI' | 'GORE' | 'SENASA';
+  entidad: 'MINAM' | 'INGEMMET' | 'ANA' | 'SERNANP' | 'MTC' | 'OEFA' | 'SBN' | 'MINCUL' | 'GEOPERU' | 'COFOPRI' | 'GORE' | 'SENASA' | 'USUARIO';
   urlWms: string;
   layers: string;
   categoria: CategoryWMS;
@@ -84,10 +84,13 @@ export interface WMSLayerConfig {
   visible: boolean;
   descripcion: string;
   preset: string[]; // Presets donde esta capa se activa por defecto
-  grupo?: string; // e.g. 'red_vial', 'hidrografia', 'zee'
+  grupo?: string; // e.g. 'red_vial', 'hidrografia', 'zee', 'usuario'
   groupNombre?: string; // e.g. 'Red Vial y Accesibilidad'
   subNombre?: string; // e.g. 'Red Vial Nacional (MTC)'
   departamento?: string;
+  isCustomUserLayer?: boolean;
+  customGeoJSON?: any;
+  customColor?: string;
 }
 
 export interface LayerPreset {

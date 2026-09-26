@@ -36,6 +36,41 @@ async function fetchLocalLayerData(layerId: string, urlWms: string): Promise<any
   const geojsonName = cleanPath.replace(/\.kmz$/i, '.geojson');
   const kmzName = cleanPath.endsWith('.kmz') ? cleanPath : `${cleanPath}.kmz`;
 
+  // 0. Si corre en Electron Desktop (offline/local), leer directamente de disco sin restricciones
+  if (typeof window !== 'undefined' && (window as any).electronAPI?.readLocalGISFile) {
+    try {
+      const electronCandidates = [geojsonName, `${layerId}.geojson`, kmzName, `${layerId}.kmz`];
+      for (const rel of electronCandidates) {
+        const fileRes = await (window as any).electronAPI.readLocalGISFile(rel);
+        if (fileRes && fileRes.success && fileRes.data) {
+          if (rel.toLowerCase().endsWith('.geojson') || rel.toLowerCase().endsWith('.json')) {
+            const raw = decodeURIComponent(escape(atob(fileRes.data)));
+            const parsed = JSON.parse(raw);
+            if (parsed && parsed.features) return parsed;
+          } else if (rel.toLowerCase().endsWith('.kmz')) {
+            const binaryString = atob(fileRes.data);
+            const bytes = new Uint8Array(binaryString.length);
+            for (let i = 0; i < binaryString.length; i++) {
+              bytes[i] = binaryString.charCodeAt(i);
+            }
+            const zip = await JSZip.loadAsync(bytes);
+            const kmlFileName = Object.keys(zip.files).find(name => name.toLowerCase().endsWith('.kml'));
+            if (kmlFileName) {
+              const kmlText = await zip.files[kmlFileName].async('text');
+              const xmlDoc = new DOMParser().parseFromString(kmlText, 'text/xml');
+              if (!xmlDoc.getElementsByTagName('parsererror').length) {
+                const parsed = kml(xmlDoc);
+                if (parsed && parsed.features && parsed.features.length > 0) return parsed;
+              }
+            }
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('[Electron Local GIS Direct Read Fallback]:', e);
+    }
+  }
+
   // 1. Prioridad Absoluta: GeoJSON pre-compilado (ultra rápido, 0 fallos de XML/ZIP)
   const candidateUrls = [
     `/capas/${encodeURI(geojsonName)}`,
@@ -373,6 +408,13 @@ export const MapView: React.FC<MapViewProps> = ({
   // 3. Simbología Cartográfica D.L. 1279 para las 15 Capas Locales Normalizadas
   // 3. Simbología Cartográfica D.L. 1278 / MINAM, CUM Suelos, CIRA y ZEE
   const getStyleForLayer = (layerId: string, opacity: number, feature?: any) => {
+    // 0. Capas personalizadas del usuario (KMZ / Shapefile / GeoJSON)
+    const userLayerConfig = activeWMSLayersRef.current.find(l => l.id === layerId);
+    if (userLayerConfig?.customColor) {
+      const col = userLayerConfig.customColor;
+      return { color: col, weight: 2.5, fillColor: col, fillOpacity: opacity * 0.45 };
+    }
+
     // A) Zonificación Ecológica y Económica (ZEE) por Regiones
     if (layerId.startsWith('zee_')) {
       const p = feature?.properties || {};
@@ -490,7 +532,17 @@ export const MapView: React.FC<MapViewProps> = ({
       let existingLayer = localVectorLayersRef.current.get(layerId);
 
       if (isVisible) {
-        if (!geojsonCacheRef.current[layerId]) {
+        if (layerConfig.customGeoJSON) {
+          if (!existingLayer) {
+            createAndAddLocalLayer(layerId, layerConfig.customGeoJSON, opacity, layerConfig);
+          } else {
+            existingLayer.setStyle(feat => getStyleForLayer(layerId, opacity, feat));
+            if (!localLayersGroupRef.current.hasLayer(existingLayer)) {
+              localLayersGroupRef.current.addLayer(existingLayer);
+            }
+          }
+          if (onLayerStatusUpdate) onLayerStatusUpdate(layerId, 'OK');
+        } else if (!geojsonCacheRef.current[layerId]) {
           if (!pendingFetchesRef.current.has(layerId)) {
             pendingFetchesRef.current.add(layerId);
             if (onLayerStatusUpdate) onLayerStatusUpdate(layerId, 'LOADING');

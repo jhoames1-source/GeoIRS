@@ -38,6 +38,19 @@ export const Navbar: React.FC<NavbarProps> = ({
 }) => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isOnline, setIsOnline] = useState<boolean>(typeof navigator !== 'undefined' ? navigator.onLine : true);
+  const isElectron = typeof window !== 'undefined' && !!(window as any).electronAPI;
+
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
   // Sincronización del selector cascada
   const [selectedDeptId, setSelectedDeptId] = useState<string>(() => {
@@ -104,6 +117,22 @@ export const Navbar: React.FC<NavbarProps> = ({
               <span className="bg-emerald-950/80 text-emerald-300 border border-emerald-500/40 text-[8px] sm:text-[9px] font-black uppercase px-1.5 sm:px-2 py-0.5 rounded-full shadow-inner">
                 Plataforma IRS
               </span>
+              {isElectron ? (
+                <span className="hidden md:inline-flex items-center space-x-1 px-1.5 py-0.5 rounded-full text-[8.5px] font-bold bg-purple-950/80 text-purple-300 border border-purple-500/40 shadow-inner" title="Versión de Escritorio Windows: 100% de capas locales cargadas">
+                  <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse"></span>
+                  <span>PC Local (100% Capas)</span>
+                </span>
+              ) : isOnline ? (
+                <span className="hidden md:inline-flex items-center space-x-1 px-1.5 py-0.5 rounded-full text-[8.5px] font-bold bg-emerald-950/80 text-emerald-300 border border-emerald-500/30 shadow-inner" title="Conectado a Internet (Vercel & WMS Nacionales)">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                  <span>En Línea (Cloud)</span>
+                </span>
+              ) : (
+                <span className="hidden md:inline-flex items-center space-x-1 px-1.5 py-0.5 rounded-full text-[8.5px] font-bold bg-amber-950/80 text-amber-300 border border-amber-500/30 shadow-inner" title="Sin conexión a Internet: modo autónomo">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+                  <span>Offline</span>
+                </span>
+              )}
             </div>
             <p className="text-[9.5px] sm:text-[10.5px] text-slate-400 font-medium hidden sm:block">
               Evaluación Territorial & Selección de Sitios (GeoAI)

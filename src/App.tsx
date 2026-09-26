@@ -99,6 +99,10 @@ export const App: React.FC = () => {
     setWmsLayers(prev => [newLayer, ...prev]);
   };
 
+  const handleRemoveCustomLayer = (id: string) => {
+    setWmsLayers(prev => prev.filter(l => l.id !== id));
+  };
+
   const handleLayerStatusUpdate = React.useCallback((layerId: string, status: 'OK' | 'ERROR' | 'LOADING') => {
     setLayerStatuses(prev => {
       if (prev[layerId] === status) return prev;
@@ -344,6 +348,7 @@ export const App: React.FC = () => {
               onExportConfig={handleExportConfig}
               onImportConfig={handleImportConfig}
               onAddCustomLayer={handleAddCustomLayer}
+              onRemoveCustomLayer={handleRemoveCustomLayer}
               layerStatuses={layerStatuses}
               onFlyToCoordinates={(lat, lng, zoom) => {
                 setCurrentJurisdiction(prev => ({

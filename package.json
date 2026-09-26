@@ -7,7 +7,10 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "electron:start": "electron electron/main.cjs",
+    "electron:dist": "vite build && electron-builder --win nsis",
+    "electron:portable": "vite build && electron-builder --win portable"
   },
   "dependencies": {
     "@tmcw/togeojson": "^7.1.2",
@@ -21,7 +24,8 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-leaflet": "^4.2.1",
-    "recharts": "^2.12.2"
+    "recharts": "^2.12.2",
+    "shpjs": "^6.2.0"
   },
   "devDependencies": {
     "@types/leaflet": "^1.9.8",
@@ -31,9 +35,56 @@
     "@types/react-dom": "^18.2.19",
     "@vitejs/plugin-react": "^4.2.1",
     "autoprefixer": "^10.4.18",
+    "electron": "^44.4.5",
+    "electron-builder": "^26.15.3",
     "postcss": "^8.4.35",
     "tailwindcss": "^3.4.1",
     "typescript": "^5.3.3",
     "vite": "^5.1.4"
+  },
+  "main": "electron/main.cjs",
+  "build": {
+    "appId": "com.geoirs.plataforma",
+    "productName": "GeoIRS Plataforma Espacial",
+    "directories": {
+      "output": "dist_electron"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "CAPAS",
+        "to": "capas"
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "public/portada/Logo_Icon.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "GeoIRS Plataforma Espacial",
+      "installerIcon": "public/portada/Logo_Icon.png",
+      "uninstallerIcon": "public/portada/Logo_Icon.png"
+    }
   }
 }

@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
+import JSZip from 'jszip';
+import { kml } from '@tmcw/togeojson';
 import { 
   Layers, Eye, EyeOff, Sliders, Bookmark, Download, Upload, Plus, X, 
   ShieldAlert, CheckCircle2, AlertTriangle, ChevronDown, ChevronRight, ChevronLeft,
-  Folder, FolderOpen, Compass, MapPin, Search
+  Folder, FolderOpen, Trash2, FileUp, Sparkles, Check, Compass, MapPin, Search
 } from 'lucide-react';
 import { WMSLayerConfig, LayerPreset, CategoryWMS } from '../types';
 import { LAYER_PRESETS } from '../constants/wmsLayers';
@@ -15,6 +17,7 @@ interface LayerTOCProps {
   onExportConfig: () => void;
   onImportConfig: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onAddCustomLayer: (newLayer: WMSLayerConfig) => void;
+  onRemoveCustomLayer?: (id: string) => void;
   layerStatuses?: Record<string, 'OK' | 'ERROR' | 'LOADING'>;
   onFlyToCoordinates?: (lat: number, lng: number, zoom: number) => void;
 }
@@ -72,6 +75,85 @@ export const LayerTOC: React.FC<LayerTOCProps> = ({
       ...prev,
       [groupId]: !prev[groupId]
     }));
+  };
+
+  // Custom User File Upload State (KMZ / Shapefile / GeoJSON)
+  const [modalMode, setModalMode] = useState<'FILE' | 'WMS'>('FILE');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isProcessingFile, setIsProcessingFile] = useState(false);
+  const [fileError, setFileError] = useState<string | null>(null);
+  const [userLayerColor, setUserLayerColor] = useState<string>('#8b5cf6');
+  const [userLayerName, setUserLayerName] = useState<string>('');
+
+  const handleProcessAndAddFile = async () => {
+    if (!selectedFile) {
+      setFileError('Por favor selecciona un archivo GIS (.kmz, .kml, .geojson, o .zip con shapefile)');
+      return;
+    }
+
+    setIsProcessingFile(true);
+    setFileError(null);
+
+    try {
+      let geojson: any = null;
+      const fileName = selectedFile.name.toLowerCase();
+
+      if (fileName.endsWith('.geojson') || fileName.endsWith('.json')) {
+        const text = await selectedFile.text();
+        geojson = JSON.parse(text);
+      } else if (fileName.endsWith('.kml')) {
+        const text = await selectedFile.text();
+        const xmlDoc = new DOMParser().parseFromString(text, 'text/xml');
+        geojson = kml(xmlDoc);
+      } else if (fileName.endsWith('.kmz')) {
+        const arrayBuffer = await selectedFile.arrayBuffer();
+        const zip = await JSZip.loadAsync(arrayBuffer);
+        const kmlFileName = Object.keys(zip.files).find(name => name.toLowerCase().endsWith('.kml'));
+        if (!kmlFileName) throw new Error('No se encontró archivo .kml dentro del .kmz');
+        const kmlText = await zip.files[kmlFileName].async('text');
+        const xmlDoc = new DOMParser().parseFromString(kmlText, 'text/xml');
+        geojson = kml(xmlDoc);
+      } else if (fileName.endsWith('.zip')) {
+        const arrayBuffer = await selectedFile.arrayBuffer();
+        const shp = (await import('shpjs')).default;
+        geojson = await shp(arrayBuffer);
+      } else {
+        throw new Error('Formato no soportado. Usa archivos .kmz, .kml, .geojson, .json o .zip (Shapefile)');
+      }
+
+      if (!geojson || !geojson.features || !geojson.features.length) {
+        throw new Error('El archivo no contiene geometrías o entidades geográficas válidas.');
+      }
+
+      const layerTitle = userLayerName.trim() || selectedFile.name.replace(/\.[^/.]+$/, '');
+      const newLayerConfig: WMSLayerConfig = {
+        id: `user_layer_${Date.now()}`,
+        nombre: layerTitle,
+        entidad: 'USUARIO',
+        urlWms: '',
+        layers: selectedFile.name,
+        categoria: 'INFRAESTRUCTURA_TERRITORIAL',
+        opacidad: 0.85,
+        visible: true,
+        descripcion: `Capa de usuario: ${selectedFile.name} (${(selectedFile.size / (1024*1024)).toFixed(2)} MB, ${geojson.features.length} entidades)`,
+        preset: ['preset_usuario'],
+        grupo: 'usuario',
+        isCustomUserLayer: true,
+        customGeoJSON: geojson,
+        customColor: userLayerColor
+      };
+
+      onAddCustomLayer(newLayerConfig);
+      setIsAddModalOpen(false);
+      setSelectedFile(null);
+      setUserLayerName('');
+      setFileError(null);
+    } catch (err: any) {
+      console.error('Error procesando archivo GIS:', err);
+      setFileError(err.message || 'Error al procesar el archivo GIS.');
+    } finally {
+      setIsProcessingFile(false);
+    }
   };
 
   // Custom Layer Form state
@@ -134,6 +216,9 @@ export const LayerTOC: React.FC<LayerTOCProps> = ({
            (layer.descripcion && layer.descripcion.toLowerCase().includes(term)) ||
            (layer.departamento && layer.departamento.toLowerCase().includes(term));
   };
+
+  // Capas añadidas por el usuario (KMZ / Shapefile / GeoJSON / WMS personalizado)
+  const userLayers = layers.filter(l => l.isCustomUserLayer || l.entidad === 'USUARIO');
 
   // Capas del Bloque 1: Exclusiones Legales y Ambientales (Modelo R1/R2)
   const block1Layers = layers.filter(l => l.categoria === 'EXCLUSION_LEGAL' && matchesSearch(l));
@@ -220,7 +305,7 @@ export const LayerTOC: React.FC<LayerTOCProps> = ({
               title="Añadir Capa Externa WMS"
             >
               <Plus className="w-3 h-3" />
-              <span>+ WMS</span>
+              <span>+ Capa GIS</span>
             </button>
             <button
               onClick={() => setIsCollapsed(true)}
@@ -307,6 +392,100 @@ export const LayerTOC: React.FC<LayerTOCProps> = ({
       <div className="flex-1 overflow-y-auto p-3 space-y-4">
         
         {/* ================================================================= */}
+        {/* ================================================================= */}
+        {/* BLOQUE DE CAPAS PERSONALIZADAS DEL USUARIO (KMZ / SHP / GEOJSON) */}
+        {/* ================================================================= */}
+        {userLayers.length > 0 && (
+          <div className="space-y-2.5 pb-2 border-b border-purple-900/50">
+            <div className="flex items-center justify-between pb-1">
+              <span className="text-[11px] font-black text-purple-400 uppercase tracking-wide flex items-center space-x-1.5">
+                <span className="w-2 h-2 rounded-full bg-purple-500 animate-pulse"></span>
+                <span>📂 Capas de Usuario ({userLayers.length})</span>
+              </span>
+              <span className="text-[10px] bg-purple-950/80 text-purple-300 border border-purple-800 px-2 py-0.5 rounded font-mono">
+                {userLayers.filter(l => l.visible).length} activas
+              </span>
+            </div>
+
+            {userLayers.map(layer => (
+              <div 
+                key={layer.id} 
+                className={`p-2.5 rounded-xl border transition ${
+                  layer.visible 
+                    ? 'bg-purple-950/20 border-purple-500/40 shadow-sm' 
+                    : 'bg-slate-950/40 border-slate-800 opacity-75'
+                }`}
+              >
+                <div className="flex items-start justify-between space-x-2">
+                  <label className="flex items-start space-x-2.5 cursor-pointer flex-1 min-w-0">
+                    <input
+                      type="checkbox"
+                      checked={layer.visible}
+                      onChange={() => onToggleLayer(layer.id)}
+                      className="mt-0.5 rounded border-slate-700 text-purple-600 focus:ring-purple-500"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center space-x-1.5 flex-wrap">
+                        <span 
+                          className="w-2.5 h-2.5 rounded-full shrink-0" 
+                          style={{ backgroundColor: layer.customColor || '#8b5cf6' }}
+                        />
+                        <span className="text-xs font-bold text-slate-100 truncate block">
+                          {layer.nombre}
+                        </span>
+                        <span className="text-[9px] bg-purple-900/50 text-purple-300 border border-purple-700/60 px-1.5 py-0.2 rounded font-mono">
+                          USUARIO
+                        </span>
+                      </div>
+                      <p className="text-[10px] text-slate-400 mt-0.5 truncate">
+                        {layer.descripcion}
+                      </p>
+                    </div>
+                  </label>
+
+                  <div className="flex items-center space-x-1 shrink-0">
+                    <button
+                      onClick={() => onToggleLayer(layer.id)}
+                      className="text-slate-400 hover:text-white p-1"
+                      title={layer.visible ? "Ocultar capa" : "Mostrar capa"}
+                    >
+                      {layer.visible ? <Eye className="w-3.5 h-3.5 text-purple-400" /> : <EyeOff className="w-3.5 h-3.5 text-slate-600" />}
+                    </button>
+                    {onRemoveCustomLayer && (
+                      <button
+                        onClick={() => onRemoveCustomLayer(layer.id)}
+                        className="text-slate-500 hover:text-rose-400 p-1"
+                        title="Eliminar capa cargada"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {layer.visible && (
+                  <div className="mt-2 pt-2 border-t border-purple-900/40 flex items-center space-x-2">
+                    <Sliders className="w-3 h-3 text-slate-500" />
+                    <span className="text-[10px] text-slate-400 w-12 font-medium">Opacidad:</span>
+                    <input
+                      type="range"
+                      min="0.1"
+                      max="1.0"
+                      step="0.05"
+                      value={layer.opacidad}
+                      onChange={(e) => onChangeOpacity(layer.id, parseFloat(e.target.value))}
+                      className="w-full accent-purple-500 h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer"
+                    />
+                    <span className="text-[10px] text-purple-400 font-bold w-7 text-right">
+                      {Math.round(layer.opacidad * 100)}%
+                    </span>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
         {/* BLOQUE 1: EXCLUSIONES LEGALES Y AMBIENTALES (MODELO R1/R2) */}
         {/* ================================================================= */}
         {(activeTab === 'ALL' || activeTab === 'EXCLUSIONES') && (

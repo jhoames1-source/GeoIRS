@@ -11,6 +11,9 @@ CAPAS/
 scratch/
 DESCARGAS_MAPAS/
 __pycache__/
+dist_electron/
+INSTALADORES/
+!INSTALADORES/INSTRUCCIONES_INSTALACION.txt
 
 # Track optimized web layers in public/capas
 !public/capas/

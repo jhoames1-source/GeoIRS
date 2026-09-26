@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   MapPin, Search, Layers, Calculator, Award, Globe2, 
   Terminal, Ruler, ShieldCheck, Download, ChevronRight, Filter, Sparkles,
-  Menu, X
+  Menu, X, ExternalLink
 } from 'lucide-react';
 import { Jurisdiction } from '../types';
 import { PERU_DEPARTMENTS, PERU_JURISDICTIONS } from '../constants/peruDemographics';
@@ -10,9 +10,9 @@ import { PERU_DEPARTMENTS, PERU_JURISDICTIONS } from '../constants/peruDemograph
 interface NavbarProps {
   currentJurisdiction: Jurisdiction;
   onSelectJurisdiction: (j: Jurisdiction) => void;
-  activeTab: 'map' | 'calculator' | 'matrix' | 'geoperu';
-  onTabChange: (tab: 'map' | 'calculator' | 'matrix' | 'geoperu') => void;
-  onOpenScanner: () => void;
+  activeTab: 'map' | 'calculator' | 'matrix';
+  onTabChange: (tab: 'map' | 'calculator' | 'matrix') => void;
+  onOpenScanner?: () => void;
   onOpenPythonModal: () => void;
   isMeasurementActive: boolean;
   onToggleMeasurement: () => void;
@@ -359,13 +359,16 @@ export const Navbar: React.FC<NavbarProps> = ({
             <span>Ficha D.L. 1279</span>
           </button>
 
-          <button
-            onClick={onOpenScanner}
-            className="bg-amber-600/20 hover:bg-amber-600/30 text-amber-400 border border-amber-500/30 px-2.5 py-1.5 rounded-lg text-xs font-bold flex items-center space-x-1.5 transition"
+          <a
+            href="https://geoperu.gob.pe"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="bg-indigo-950/60 hover:bg-indigo-900/60 text-indigo-300 border border-indigo-500/40 px-2.5 py-1.5 rounded-lg text-xs font-bold flex items-center space-x-1.5 transition shadow-sm"
+            title="Abrir Plataforma Oficial GeoPerú (PCM) en pestaña externa"
           >
-            <Filter className="w-3.5 h-3.5" />
-            <span>Escáner</span>
-          </button>
+            <ExternalLink className="w-3.5 h-3.5 text-indigo-400" />
+            <span>GeoPerú</span>
+          </a>
 
           <button
             onClick={onToggleMeasurement}
@@ -478,13 +481,16 @@ export const Navbar: React.FC<NavbarProps> = ({
               <span>Ficha Técnica</span>
             </button>
 
-            <button
-              onClick={() => { onOpenScanner(); setIsMobileMenuOpen(false); }}
-              className="bg-amber-600/20 text-amber-400 border border-amber-500/30 p-2 rounded-lg text-xs font-bold flex items-center space-x-2"
+            <a
+              href="https://geoperu.gob.pe"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="bg-indigo-950/60 text-indigo-300 border border-indigo-500/40 p-2 rounded-lg text-xs font-bold flex items-center space-x-2"
             >
-              <Filter className="w-4 h-4" />
-              <span>Escáner Exclusión</span>
-            </button>
+              <ExternalLink className="w-4 h-4 text-indigo-400" />
+              <span>GeoPerú Oficial ↗</span>
+            </a>
 
             <button
               onClick={() => { onToggleMeasurement(); setIsMobileMenuOpen(false); }}

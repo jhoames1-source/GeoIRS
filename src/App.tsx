@@ -4,8 +4,6 @@ import { MapView } from './components/MapView';
 import { LayerTOC } from './components/LayerTOC';
 import { SizingCalculatorPanel } from './components/SizingCalculatorPanel';
 import { EvaluationMatrixPanel } from './components/EvaluationMatrixPanel';
-import { GeoPeruLiveVisor } from './components/GeoPeruLiveVisor';
-import { SpatialScannerModal } from './components/SpatialScannerModal';
 import { PythonScriptModal } from './components/PythonScriptModal';
 import { MeasurementTools } from './components/MeasurementTools';
 import { IRSLocatorModal } from './components/IRSLocatorModal';
@@ -26,7 +24,7 @@ import { evaluateZEEData, evaluateLandUseData, generateGeoAISustenance } from '.
 export const App: React.FC = () => {
   // Navigation & View State
   const [showPortada, setShowPortada] = useState(true);
-  const [activeTab, setActiveTab] = useState<'map' | 'calculator' | 'matrix' | 'geoperu'>('map');
+  const [activeTab, setActiveTab] = useState<'map' | 'calculator' | 'matrix'>('map');
   const [currentJurisdiction, setCurrentJurisdiction] = useState<Jurisdiction>(PERU_JURISDICTIONS[0]); // Celendín, Cajamarca por defecto
   const [candidateZones, setCandidateZones] = useState<CandidateZone[]>(PERU_CANDIDATE_ZONES);
   const [selectedZone, setSelectedZone] = useState<CandidateZone | null>(null);
@@ -58,7 +56,6 @@ export const App: React.FC = () => {
   }, [wmsLayers]);
 
   // Modals & Tools State
-  const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [isPythonModalOpen, setIsPythonModalOpen] = useState(false);
   const [isMeasurementActive, setIsMeasurementActive] = useState(false);
   const [isIRSLocatorOpen, setIsIRSLocatorOpen] = useState(false);
@@ -326,7 +323,6 @@ export const App: React.FC = () => {
         }}
         activeTab={activeTab}
         onTabChange={setActiveTab}
-        onOpenScanner={() => setIsScannerOpen(true)}
         onOpenPythonModal={() => setIsPythonModalOpen(true)}
         isMeasurementActive={isMeasurementActive}
         onToggleMeasurement={() => setIsMeasurementActive(!isMeasurementActive)}
@@ -505,10 +501,6 @@ export const App: React.FC = () => {
             onExportPDF={handleExportPDF}
           />
         )}
-
-        {activeTab === 'geoperu' && (
-          <GeoPeruLiveVisor />
-        )}
       </div>
 
       {/* Modals */}
@@ -517,17 +509,6 @@ export const App: React.FC = () => {
         onClose={() => setIsFichaTecnicaOpen(false)}
         zone={selectedZone}
         jurisdiction={currentJurisdiction}
-      />
-
-      <SpatialScannerModal
-        isOpen={isScannerOpen}
-        onClose={() => setIsScannerOpen(false)}
-        jurisdiction={currentJurisdiction}
-        candidateZones={candidateZones}
-        onSelectZone={(z) => {
-          setSelectedZone(z);
-          setActiveTab('map');
-        }}
       />
 
       <PythonScriptModal

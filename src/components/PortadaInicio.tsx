@@ -69,15 +69,18 @@ export const PortadaInicio: React.FC<PortadaInicioProps> = ({ onEnterPortal }) =
       }`}
     >
       {/* Fondo Panorámico con Animación Ken Burns */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      <div 
+        onClick={handleLogoClick}
+        className="absolute inset-0 overflow-hidden cursor-pointer"
+        title="Haz clic para ingresar al Geoportal"
+      >
         <img 
           src="./portada/Inicio_Portada.jpg" 
           alt="Portada GeoIRS" 
-          className="w-full h-full object-cover object-center animate-kenburns opacity-90 scale-105"
+          className="w-full h-full object-cover object-center animate-kenburns opacity-95"
         />
-        {/* Degradados de atmósfera cinematográfica */}
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-slate-950/80" />
-        <div className="absolute inset-0 bg-radial-gradient from-transparent via-slate-950/30 to-slate-950/90" />
+        {/* Degradados sutiles de atmósfera */}
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-slate-950/60" />
       </div>
 
       {/* Onda de choque (shockwave) al hacer clic */}
@@ -111,7 +114,7 @@ export const PortadaInicio: React.FC<PortadaInicioProps> = ({ onEnterPortal }) =
           </div>
           <button
             onClick={handleLogoClick}
-            className="group flex items-center space-x-2 bg-emerald-600/90 hover:bg-emerald-500 text-white px-4 py-2 rounded-xl text-xs font-black transition-all duration-200 shadow-lg shadow-emerald-950/60 hover:shadow-emerald-500/30 active:scale-95 border border-emerald-400/40"
+            className="group flex items-center space-x-2 bg-emerald-600/90 hover:bg-emerald-500 text-white px-4 py-2 rounded-xl text-xs font-black transition-all duration-200 shadow-lg shadow-emerald-950/60 hover:shadow-emerald-500/30 active:scale-95 border border-emerald-400/40 cursor-pointer"
           >
             <span>Ingresar al Geoportal</span>
             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -120,32 +123,14 @@ export const PortadaInicio: React.FC<PortadaInicioProps> = ({ onEnterPortal }) =
       </header>
 
       {/* ======================================================== */}
-      {/* CUERPO CENTRAL: LOGO INTERACTIVO Y EFECTO PORTAL */}
+      {/* CUERPO CENTRAL: INTERACTIVO SIN LOGO SUPERPUESTO */}
       {/* ======================================================== */}
-      <main className="relative z-10 flex flex-col items-center justify-center my-auto px-4 text-center">
-        
-        {/* Hotspot Interactivo sobre el Logo Central con Fondo 100% Transparente */}
-        <div 
-          onClick={handleLogoClick}
-          className="group relative cursor-pointer flex items-center justify-center w-72 h-64 sm:w-96 sm:h-80 md:w-[500px] md:h-[380px] transition-all duration-300 hover:scale-105 active:scale-95 select-none"
-          title="Haz clic en el Logo GeoIRS para ingresar al Geoportal"
-        >
-          {/* Anillos concéntricos de pulso radar centrados en la diana del Logo */}
-          <div className="absolute w-64 h-64 sm:w-80 sm:h-80 rounded-full border-2 border-emerald-400/40 animate-radar-1 pointer-events-none" />
-          <div className="absolute w-80 h-80 sm:w-96 sm:h-96 rounded-full border border-cyan-400/30 animate-radar-2 pointer-events-none" />
-          <div className="absolute w-96 h-96 sm:w-[440px] sm:h-[440px] rounded-full border border-emerald-500/20 animate-radar-3 pointer-events-none" />
-
-          {/* Halo sutil de luz bio-digital que se intensifica al pasar el cursor */}
-          <div className="absolute w-64 h-64 sm:w-80 sm:h-80 rounded-full bg-radial-gradient from-emerald-400/25 via-cyan-400/15 to-transparent blur-2xl opacity-40 group-hover:opacity-90 transition-opacity duration-500 pointer-events-none" />
-
-          {/* Logo Central GeoIRS con efecto de flotación, brillo y respuesta interactiva */}
-          <img 
-            src="./portada/Logo_GeoIRS_transparent.png" 
-            alt="GeoIRS - Plataforma Espacial de Selección de Sitios IRS" 
-            className="relative z-10 w-52 sm:w-72 md:w-88 object-contain drop-shadow-[0_0_35px_rgba(16,185,129,0.5)] group-hover:drop-shadow-[0_0_55px_rgba(16,185,129,0.9)] group-hover:scale-105 transition-all duration-300"
-          />
-        </div>
-
+      <main 
+        onClick={handleLogoClick}
+        className="relative z-10 flex-1 flex flex-col items-center justify-center w-full my-auto px-4 text-center cursor-pointer select-none"
+        title="Haz clic en cualquier parte de la pantalla para ingresar al Geoportal"
+      >
+        {/* Espacio limpio para contemplar únicamente el arte panorámico original de Inicio_Portada.jpg con su movimiento continuo */}
       </main>
 
       {/* ======================================================== */}

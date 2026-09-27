@@ -123,14 +123,25 @@ export const PortadaInicio: React.FC<PortadaInicioProps> = ({ onEnterPortal }) =
       </header>
 
       {/* ======================================================== */}
-      {/* CUERPO CENTRAL: INTERACTIVO SIN LOGO SUPERPUESTO */}
+      {/* CUERPO CENTRAL: INTERACTIVO CON ONDAS SONORAS / PALPITAR */}
       {/* ======================================================== */}
-      <main 
-        onClick={handleLogoClick}
-        className="relative z-10 flex-1 flex flex-col items-center justify-center w-full my-auto px-4 text-center cursor-pointer select-none"
-        title="Haz clic en cualquier parte de la pantalla para ingresar al Geoportal"
-      >
-        {/* Espacio limpio para contemplar únicamente el arte panorámico original de Inicio_Portada.jpg con su movimiento continuo */}
+      <main className="relative z-10 flex flex-col items-center justify-center my-auto px-4 text-center">
+        
+        {/* Hotspot Interactivo con ondas sonoras / radar que palpitan sobre el centro del arte */}
+        <div 
+          onClick={handleLogoClick}
+          className="group relative cursor-pointer flex items-center justify-center w-72 h-64 sm:w-96 sm:h-80 md:w-[500px] md:h-[380px] transition-all duration-300 hover:scale-105 active:scale-95 select-none"
+          title="Haz clic para ingresar al Geoportal"
+        >
+          {/* Anillos concéntricos de pulso radar / ondas sonoras */}
+          <div className="absolute w-64 h-64 sm:w-80 sm:h-80 rounded-full border-2 border-emerald-400/40 animate-radar-1 pointer-events-none" />
+          <div className="absolute w-80 h-80 sm:w-96 sm:h-96 rounded-full border border-cyan-400/30 animate-radar-2 pointer-events-none" />
+          <div className="absolute w-96 h-96 sm:w-[440px] sm:h-[440px] rounded-full border border-emerald-500/20 animate-radar-3 pointer-events-none" />
+
+          {/* Halo sutil de luz bio-digital que palpita y se intensifica al interactuar */}
+          <div className="absolute w-64 h-64 sm:w-80 sm:h-80 rounded-full bg-radial-gradient from-emerald-400/25 via-cyan-400/15 to-transparent blur-2xl opacity-40 group-hover:opacity-90 transition-opacity duration-500 pointer-events-none" />
+        </div>
+
       </main>
 
       {/* ======================================================== */}

@@ -1738,7 +1738,22 @@ export const PERU_DEPARTMENTS: PeruDepartment[] = [
   },
 ];
 
+export const PERU_NACIONAL_JURISDICTION: Jurisdiction = {
+  ubigeo: '000000',
+  departamento: 'PERÚ (NACIONAL)',
+  provincia: 'VISTA PANORÁMICA',
+  distrito: 'TODO EL PERÚ',
+  region: 'SIERRA',
+  poblacion: 33726000,
+  gpc: 0.75,
+  tasaCrecimiento: 1.2,
+  lat: -9.189967,
+  lng: -75.015152,
+  zoom: 6
+};
+
 export const PERU_JURISDICTIONS: Jurisdiction[] = [
+  PERU_NACIONAL_JURISDICTION,
   { ubigeo: '010101', departamento: 'AMAZONAS', provincia: 'CHACHAPOYAS', distrito: 'CHACHAPOYAS', region: 'SELVA', poblacion: 35000, gpc: 0.62, tasaCrecimiento: 1.4, lat: -6.2317, lng: -77.869, zoom: 13 },
   { ubigeo: '010102', departamento: 'AMAZONAS', provincia: 'CHACHAPOYAS', distrito: 'ASUNCIÓN', region: 'SELVA', poblacion: 3200, gpc: 0.52, tasaCrecimiento: 1.4, lat: -6.0319, lng: -77.7128, zoom: 13 },
   { ubigeo: '010103', departamento: 'AMAZONAS', provincia: 'CHACHAPOYAS', distrito: 'BALSAS', region: 'SELVA', poblacion: 1800, gpc: 0.5, tasaCrecimiento: 1.4, lat: -6.8356, lng: -78.0189, zoom: 13 },

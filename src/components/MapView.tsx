@@ -247,7 +247,7 @@ export const MapView: React.FC<MapViewProps> = ({
     osmLayer.addTo(map);
 
     const baseMaps = {
-      "OpenStreetMap (Estándar Celendín)": osmLayer,
+      "OpenStreetMap (Nacional Perú)": osmLayer,
       "Esri World Imagery (Satelital Alta Res.)": esriSatLayer,
       "Carto Voyager (Claro)": cartoPositron,
       "Google Satellite Híbrido": googleSat
@@ -675,6 +675,11 @@ export const MapView: React.FC<MapViewProps> = ({
     radialLinesGroupRef.current.clearLayers();
 
     if (isMeasurementActive && candidateZones.length === 0) return;
+
+    // Si la jurisdicción es la vista nacional panorámica del Perú (ubigeo '000000'), no pintar pin central ni buffer distrital
+    if (jurisdiction.ubigeo === '000000') {
+      return;
+    }
 
     // Determinar si el contexto actual es Triangulación Intermunicipal o Búsqueda Monodistrital
     const isIntermunicipal = triangulatedDistricts && triangulatedDistricts.length > 1;

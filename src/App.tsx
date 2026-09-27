@@ -11,7 +11,7 @@ import { FichaTecnicaModal } from './components/FichaTecnicaModal';
 import { PortadaInicio } from './components/PortadaInicio';
 
 import { Jurisdiction, CandidateZone, WMSLayerConfig, LayerPreset } from './types';
-import { PERU_JURISDICTIONS } from './constants/peruDemographics';
+import { PERU_JURISDICTIONS, PERU_NACIONAL_JURISDICTION } from './constants/peruDemographics';
 import { OFFICIAL_WMS_LAYERS } from './constants/wmsLayers';
 import { PERU_CANDIDATE_ZONES } from './constants/candidateZones';
 
@@ -25,7 +25,7 @@ export const App: React.FC = () => {
   // Navigation & View State
   const [showPortada, setShowPortada] = useState(true);
   const [activeTab, setActiveTab] = useState<'map' | 'calculator' | 'matrix'>('map');
-  const [currentJurisdiction, setCurrentJurisdiction] = useState<Jurisdiction>(PERU_JURISDICTIONS[0]); // Celendín, Cajamarca por defecto
+  const [currentJurisdiction, setCurrentJurisdiction] = useState<Jurisdiction>(PERU_NACIONAL_JURISDICTION); // Vista Panorámica Nacional de todo el Perú por defecto
   const [candidateZones, setCandidateZones] = useState<CandidateZone[]>(PERU_CANDIDATE_ZONES);
   const [selectedZone, setSelectedZone] = useState<CandidateZone | null>(null);
   const [searchRadiusKm, setSearchRadiusKm] = useState<number>(8);

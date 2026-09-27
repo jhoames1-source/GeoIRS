@@ -33,7 +33,7 @@ export const App: React.FC = () => {
   // WMS Layer Management & LocalStorage Persistence
   // WMS Layer Management & LocalStorage Persistence (v5 con soporte GeoJSON nativo)
   const [wmsLayers, setWmsLayers] = useState<WMSLayerConfig[]>(() => {
-    const saved = localStorage.getItem('geoportal_irs_wms_layers_v5');
+    const saved = localStorage.getItem('geoportal_irs_wms_layers_v6');
     if (saved) {
       try {
         const parsed: WMSLayerConfig[] = JSON.parse(saved);
@@ -52,7 +52,7 @@ export const App: React.FC = () => {
   const [layerStatuses, setLayerStatuses] = useState<Record<string, 'OK' | 'ERROR' | 'LOADING'>>({});
 
   useEffect(() => {
-    localStorage.setItem('geoportal_irs_wms_layers_v5', JSON.stringify(wmsLayers));
+    localStorage.setItem('geoportal_irs_wms_layers_v6', JSON.stringify(wmsLayers));
   }, [wmsLayers]);
 
   // Modals & Tools State

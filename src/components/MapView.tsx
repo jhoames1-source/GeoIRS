@@ -56,6 +56,14 @@ async function fetchLocalLayerData(layerId: string, urlWms: string): Promise<any
             }
           } else if (fileRes.format === 'binary' && fileRes.buffer) {
             const zip = await JSZip.loadAsync(fileRes.buffer);
+            const geojsonFileName = Object.keys(zip.files).find(name => name.toLowerCase().endsWith('.geojson') || name.toLowerCase().endsWith('.json'));
+            if (geojsonFileName) {
+              const text = await zip.files[geojsonFileName].async('text');
+              const parsed = JSON.parse(text);
+              if (parsed && parsed.features && Array.isArray(parsed.features) && parsed.features.length > 0) {
+                return parsed;
+              }
+            }
             const kmlFileName = Object.keys(zip.files).find(name => name.toLowerCase().endsWith('.kml'));
             if (kmlFileName) {
               const kmlText = await zip.files[kmlFileName].async('text');
@@ -149,6 +157,14 @@ async function fetchLocalLayerData(layerId: string, urlWms: string): Promise<any
         }
 
         const zip = await JSZip.loadAsync(arrayBuffer);
+        const geojsonFileName = Object.keys(zip.files).find(name => name.toLowerCase().endsWith('.geojson') || name.toLowerCase().endsWith('.json'));
+        if (geojsonFileName) {
+          const text = await zip.files[geojsonFileName].async('text');
+          const parsed = JSON.parse(text);
+          if (parsed && parsed.features && Array.isArray(parsed.features) && parsed.features.length > 0) {
+            return parsed;
+          }
+        }
         const kmlFileName = Object.keys(zip.files).find(name => name.toLowerCase().endsWith('.kml'));
 
         if (kmlFileName) {
@@ -470,17 +486,17 @@ export const MapView: React.FC<MapViewProps> = ({
     // B) Capacidad de Uso Mayor del Suelo (CUM - MINAM / MIDAGRI)
     if (layerId === 'capacidad_uso_suelo') {
       const p = feature?.properties || {};
-      const desc = `${p.description || ''} ${p.Asociacion || ''} ${p.FIRST_ASOC || ''}`.toUpperCase();
-      if (desc.includes('X') || desc.includes('PROTECCIÓN') || desc.includes('PROTECCION')) {
+      const asoc = `${p.asociacion || ''} ${p.tipo || ''} ${p.name || ''} ${p.FIRST_ASOC || ''}`.toUpperCase();
+      if (asoc.includes('X') || asoc.includes('PROTECCIÓN') || asoc.includes('PROTECCION')) {
         return { color: '#047857', weight: 1.8, fillColor: '#10b981', fillOpacity: opacity * 0.45 };
       }
-      if (desc.includes('P') || desc.includes('PASTOREO')) {
+      if (asoc.includes('P') || asoc.includes('PASTO')) {
         return { color: '#65a30d', weight: 1.5, fillColor: '#84cc16', fillOpacity: opacity * 0.4 };
       }
-      if (desc.includes('F') || desc.includes('FORESTAL')) {
+      if (asoc.includes('F') || asoc.includes('FORESTAL')) {
         return { color: '#0f766e', weight: 1.5, fillColor: '#14b8a6', fillOpacity: opacity * 0.4 };
       }
-      if (desc.includes('A') || desc.includes('C') || desc.includes('CULTIVO')) {
+      if (asoc.includes('A') || asoc.includes('C') || asoc.includes('CULTIVO')) {
         return { color: '#dc2626', weight: 2, fillColor: '#ef4444', fillOpacity: opacity * 0.45 };
       }
       return { color: '#84cc16', weight: 1.5, fillColor: '#bef264', fillOpacity: opacity * 0.35 };
@@ -630,11 +646,11 @@ export const MapView: React.FC<MapViewProps> = ({
           },
           onEachFeature: (feature, layer) => {
             const props = feature.properties || {};
-            const name = props.Name || props.NAME || props.name || props.nombre || props.NOMBRE || props.UNIDAD || props.ZONA_CRIT || layerConfig.nombre;
+            const name = props.Name || props.NAME || props.name || props.nombre || props.NOMBRE || props.UNIDAD || props.ZONA_CRIT || props.CODRUTA || layerConfig.nombre;
             const desc = props.description || props.DESCRIPCIO || '';
             
             let popupContent = `
-              <div class="p-2.5 font-sans bg-slate-900 text-slate-100 text-xs rounded border border-emerald-600 max-w-sm max-h-64 overflow-y-auto">
+              <div class="p-2.5 font-sans bg-slate-900 text-slate-100 text-xs rounded border border-emerald-600 max-w-sm max-h-72 overflow-y-auto">
                 <b class="text-emerald-400 font-extrabold text-sm block mb-1">${name}</b>
                 <div class="flex items-center space-x-1.5 mb-1.5">
                   <span class="px-1.5 py-0.5 rounded bg-slate-800 text-[10px] font-bold text-slate-300 border border-slate-700">${layerConfig.entidad}</span>
@@ -642,7 +658,36 @@ export const MapView: React.FC<MapViewProps> = ({
                 </div>
             `;
             
-            if (desc && desc.includes('<table')) {
+            if (layerId === 'capacidad_uso_suelo' && props.asociacion) {
+              popupContent += `
+                <div class="mt-2 space-y-1 text-xs border-t border-slate-800 pt-2">
+                  <div><b>Clase CUM:</b> <span class="text-emerald-400 font-bold">${props.asociacion}</span></div>
+                  <div><b>Aptitud de Uso:</b> <span class="text-white">${props.tipo}</span></div>
+                  ${props.area_ha ? `<div><b>Superficie:</b> ${props.area_ha.toLocaleString()} ha</div>` : ''}
+                  <div class="text-[10px] text-slate-400 mt-1">D.S. 017-2009-AG (Reglamento de Clasificación de Tierras)</div>
+                </div>
+              `;
+            } else if (layerId === 'zonas_criticas_pendientes' && (props.PELIGROS_G || props.PARAJE)) {
+              popupContent += `
+                <div class="mt-2 space-y-1 text-xs border-t border-slate-800 pt-2">
+                  <div><b>Tipo de Peligro:</b> <span class="text-rose-400 font-bold">${props.PELIGROS_G || 'Zona Crítica'}</span></div>
+                  <div><b>Lugar / Paraje:</b> <span class="text-white">${props.PARAJE || 'N/D'}</span></div>
+                  <div><b>Ubicación:</b> ${props.NM_DIST || props.DISTRITO || ''}, ${props.NM_PROV || props.PROVINCIA || ''} (${props.NM_DEPA || props.REGION || ''})</div>
+                  ${props.BOLETIN ? `<div><b>Boletín INGEMMET:</b> <span class="text-[10px] text-slate-300">${props.BOLETIN}</span></div>` : ''}
+                </div>
+              `;
+            } else if (layerId.startsWith('red_vial') && (props.CODRUTA || props.cCodRuta || props.TRAYECTORI || props.cNomRuta)) {
+              const ruta = props.CODRUTA || props.cCodRuta || props.name || '';
+              const trayecto = props.TRAYECTORI || props.cNomRuta || '';
+              const longKm = props.LONGITUD || props.dLongitud || '';
+              popupContent += `
+                <div class="mt-2 space-y-1 text-xs border-t border-slate-800 pt-2">
+                  <div><b>Código de Ruta:</b> <span class="text-amber-400 font-mono font-bold">${ruta}</span></div>
+                  ${longKm ? `<div><b>Longitud Tramo:</b> <span class="text-white">${Number(longKm).toFixed(2)} km</span></div>` : ''}
+                  ${trayecto ? `<div><b>Trayectoria:</b> <span class="text-slate-300 text-[11px]">${trayecto}</span></div>` : ''}
+                </div>
+              `;
+            } else if (desc && desc.includes('<table')) {
               popupContent += `<div class="mt-1 text-[11px] text-slate-300">${desc}</div>`;
             } else if (desc) {
               popupContent += `<p class="mt-1 text-[11px] text-slate-300">${desc}</p>`;

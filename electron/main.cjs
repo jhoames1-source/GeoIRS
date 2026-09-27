@@ -65,9 +65,10 @@ ipcMain.handle('read-local-gis-file', async (event, relativePath) => {
 
     const searchDirs = [
       app.isPackaged ? path.join(process.resourcesPath, 'capas') : path.join(__dirname, '../CAPAS'),
+      path.join(process.resourcesPath, 'capas'),
+      path.join(__dirname, '../CAPAS'),
       path.join(__dirname, '../public/capas'),
-      path.join(__dirname, '../dist/capas'),
-      path.join(__dirname, '../CAPAS')
+      path.join(__dirname, '../dist/capas')
     ];
 
     let targetPath = null;
